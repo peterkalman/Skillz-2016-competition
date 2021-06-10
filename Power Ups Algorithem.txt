@@ -1,0 +1,97 @@
+..
+..
+global Attack
+global Speed
+			  ## Lets say we are in a function that gives orders to pirates (we have 2 attackers and 2 treasurers) 
+Get_powerups_info()	  ##we recieve info about any powerups that exist on this current turn it will turn a bolean flag for the powerups name
+
+if Attack:		  ## If Attack powerup bolean value was turned on it will mean it exists.
+   upgrade_attacker(game) ## Function that sets one of the attackers to take the Attack power up (with calculations of course)
+
+if Speed:		  ## If Speed powerup bolean value was turned on it will mean it exists.
+   upgrade_treasurer(game)## Function that sets one of the trasurers to take the Speed powerup.
+ ####!!! ############ OBVIOUSLY before upgrading the pirates , you must check if they are capable of moving and firing
+..
+bla bla bla
+..
+
+Do_Orders() ## Does the final orders that were given to the pirates
+
+## END OF TURN
+
+Get_powerups_info(game):
+   global Attack
+   global Speed
+   power_ups_on_map=game.powerups()
+   if "attack" in power_ups_on_map:
+      Attack=True
+   if "speed" in power_ups_on_map:
+      Speed=True
+### FINISH OF Get_powerups_info
+
+Min_dist_to_object(game,obj1,obj2):## Obj1 is the one that moves ## Obj2 is the one that is static
+   if obj1=="attacker":
+      global Attacker_pirates ## This is a list of all the pirates we announced them as attackers to this point (they are the closest to the enemy)
+      if obj2=="power-attack":
+         power_attack_loc=attack_powerup.location
+	 min_dist=game.distance(Attacker_pirates[0],power_attack_loc)## need to check if there are any pirates at all , otherwise crash.
+	 best_pirate=Attacker_pirates[0]
+	 for attpir in Attacker_pirates:
+	    if game.distance(attpir,power_attack_loc)<min_dist:
+	       min_dist=game.distance(attpir,power_attack_loc)
+	       best_pirate=attpir
+	 return min_dist,best_pirate
+   if obj1=="treasurer":
+      global Treasurer_pirates ## This is a list of all the pirates we announced them as Treasurer_pirates to this point
+      if obj2=="power-speed":
+         power_speed_loc=speed_powerup.location
+	 min_dist=game.distance(Treasurer_pirates[0],power_speed_loc)## need to check if there are any pirates at all , otherwise crash.
+	 best_pirate=Treasurer_pirates[0]
+	 for trepir in Treasurer_pirates:
+	    if game.distance(trepir,power_speed_loc)<min_dist:
+	       min_dist=game.distance(trepir,power_speed_loc)
+	       best_pirate=trepir
+	 return min_dist,best_pirate
+   if obj1=="enemy":
+      Enemy_Pirates=game.enemy_sober_pirates()
+      if obj2=="power-attack":
+	 power_attack_loc=attack_powerup.location
+	 min_dist=game.distance(Enemy_Pirates[0],power_attack_loc)## need to check if there are any pirates at all , otherwise crash.
+	 best_pirate=Enemy_Pirates[0]
+	 for enemy in Enemy_Pirates:
+	    if game.distance(enemy,power_attack_loc)<min_dist:
+	       min_dist=game.distance(enemy,power_attack_loc)
+	       best_pirate=enemy
+	 return min_dist,best_pirate
+      if obj2=="power-speed":
+	 power_speed_loc=speed_powerup.location
+	 min_dist=game.distance(Enemy_Pirates[0],power_speed_loc)## need to check if there are any pirates at all , otherwise crash.
+	 best_pirate=Enemy_Pirates[0]
+	 for enemy in Enemy_Pirates:
+	    if game.distance(enemy,power_speed_loc)<min_dist:
+	       min_dist=game.distance(enemy,power_speed_loc)
+	       best_pirate=enemy
+	 return min_dist,best_pirate
+
+#############
+#$$$The set_sail and attack commands should be inserted into the Do_Orders Function (and list) . I just made it obvious for the reader what is the last order the pirate will do.
+#############
+Upgrade_attacker(game):
+   
+   dist_to_power_up,closest_attacker_to_powerup=Min_dist_to_object(game,"attacker","power-attack")
+   enemydist_to_power_up,closest_enemy_to_powerup=Min_dist_to_object(game,"enemy","power-attack")
+   if dist_to_power_up>enemydist_to_power_up:
+      game.set_sail(Closest_attacker_to_powerup,attack_powerup.location)	 ## if we can reach the powerup before the enemy can , we take it.
+   else:
+      game.attack_directly(Closest_attacker_to_powerup,Closest_enemy_to_powerup) ## else , we hunt the enemy instead.
+## The treasurer may act a little more aggressivly this time but it will be just for the powerup. after he gets it , he keeps treasuring. 
+Upgrade_treasurer(game):
+
+   dist_to_power_up,closest_treasurer_to_powerup=Min_dist_to_object("treasurer","power-speed")
+   enemydist_to_power_up,closest_enemy_to_powerup=Min_dist_to_object("enemy","power-speed")
+   if dist_to_power_up>enemydist_to_power_up:
+      game.set_sail(Closest_attacker_to_powerup,attack_powerup.location)	 ## if we can reach the powerup before the enemy can , we take it.
+   else:
+      game.attack_directly(Closest_attacker_to_powerup,Closest_enemy_to_powerup) ## else , we hunt the enemy instead.  
+ 
+
